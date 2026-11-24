@@ -13,6 +13,8 @@ native Kotlin / Jetpack Compose app.
 - Decryption is optional (Settings), and so is deleting the encrypted files afterwards.
 - Pause, resume and cancel from the app or from the notification. Downloads keep
   running in the background.
+- English and Spanish. The app follows the system language; on Android 13+ you can
+  also set it per app (Settings → Apps → WiiUDownloader → Language).
 
 ## How the folder choice works
 
@@ -30,7 +32,8 @@ Every build is done by GitHub Actions (`.github/workflows/android.yml`):
 - Push a tag such as `v1.0.0` → the APKs are attached to a GitHub release.
 - Or use **Actions → Android → Run workflow**.
 
-Pick `arm64-v8a` for almost every modern phone, or `universal` if unsure.
+There is a single APK that contains both the 64-bit (`arm64-v8a`) and the 32-bit
+(`armeabi-v7a`) builds, so the same file installs on any ARM phone or tablet.
 
 ### Keep the same signature between builds (recommended)
 
@@ -60,7 +63,7 @@ Requires Go, JDK 17, the Android SDK (platform 35) and NDK 27.
 python grabTitles.py                      # writes db.go (title database)
 go install golang.org/x/mobile/cmd/gomobile@latest && gomobile init
 go get golang.org/x/mobile/bind
-gomobile bind -target=android/arm64 -androidapi 26 -javapkg io.github.juanfunkin \
+gomobile bind -target=android/arm64,android/arm -androidapi 26 -javapkg io.github.juanfunkin \
   -o android/app/libs/wiiu.aar ./wiiumobile
 cd android && ./gradlew assembleDebug
 ```

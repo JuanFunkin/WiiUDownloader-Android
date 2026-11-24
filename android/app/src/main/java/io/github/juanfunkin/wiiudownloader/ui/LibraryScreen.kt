@@ -39,9 +39,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.juanfunkin.wiiudownloader.R
 import io.github.juanfunkin.wiiudownloader.Repo
 import io.github.juanfunkin.wiiudownloader.Title
 import kotlinx.coroutines.Dispatchers
@@ -49,15 +52,19 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
 private val categories = listOf(
-    "game" to "Juegos",
-    "update" to "Updates",
-    "dlc" to "DLC",
-    "demo" to "Demos",
-    "all" to "Todo",
+    "game" to R.string.cat_game,
+    "update" to R.string.cat_update,
+    "dlc" to R.string.cat_dlc,
+    "demo" to R.string.cat_demo,
+    "all" to R.string.cat_all,
 )
 
 // Bit values match the MCP region flags used by the Go core.
-private val regions = listOf(2 to "USA", 4 to "Europa", 1 to "Japón")
+private val regions = listOf(
+    2 to R.string.region_usa,
+    4 to R.string.region_europe,
+    1 to R.string.region_japan,
+)
 
 @Composable
 fun LibraryScreen(modifier: Modifier = Modifier) {
@@ -86,12 +93,12 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             singleLine = true,
-            placeholder = { Text("Buscar por nombre o Title ID") },
+            placeholder = { Text(stringResource(R.string.search_hint)) },
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
             trailingIcon = {
                 if (query.isNotEmpty()) {
                     IconButton(onClick = { query = "" }) {
-                        Icon(Icons.Default.Clear, contentDescription = "Borrar búsqueda")
+                        Icon(Icons.Default.Clear, contentDescription = stringResource(R.string.clear_search))
                     }
                 }
             },
@@ -105,7 +112,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                 FilterChip(
                     selected = category == id,
                     onClick = { category = id },
-                    label = { Text(label) },
+                    label = { Text(stringResource(label)) },
                 )
             }
         }
@@ -118,13 +125,18 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                 FilterChip(
                     selected = (regionMask and bit) != 0,
                     onClick = { regionMask = regionMask xor bit },
-                    label = { Text(label) },
+                    label = { Text(stringResource(label)) },
                 )
             }
         }
 
+        val resources = LocalContext.current.resources
         Text(
-            text = if (searching) "Buscando…" else "${results.size} resultados",
+            text = if (searching) {
+                stringResource(R.string.searching)
+            } else {
+                resources.getQuantityString(R.plurals.results_count, results.size, results.size)
+            },
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
@@ -144,7 +156,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                         if (title.tid in queuedIds) {
                             Icon(
                                 Icons.Default.Check,
-                                contentDescription = "En la cola",
+                                contentDescription = stringResource(R.string.in_queue),
                                 tint = MaterialTheme.colorScheme.primary,
                             )
                         }
@@ -206,14 +218,14 @@ private fun TitleSheet(title: Title, onDismiss: () -> Unit) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                         Text(
-                            "Buscando update y DLC…",
+                            stringResource(R.string.finding_related),
                             modifier = Modifier.padding(start = 12.dp),
                             style = MaterialTheme.typography.bodyMedium,
                         )
                     }
                 } else {
-                    RelatedRow("Update", update, includeUpdate) { includeUpdate = it }
-                    RelatedRow("DLC", dlc, includeDlc) { includeDlc = it }
+                    RelatedRow(stringResource(R.string.related_update), update, includeUpdate) { includeUpdate = it }
+                    RelatedRow(stringResource(R.string.related_dlc), dlc, includeDlc) { includeDlc = it }
                 }
             }
 
@@ -229,9 +241,9 @@ private fun TitleSheet(title: Title, onDismiss: () -> Unit) {
             ) {
                 Text(
                     when {
-                        toAdd.isEmpty() -> "Ya está en la cola"
-                        toAdd.size == 1 -> "Añadir a la cola"
-                        else -> "Añadir ${toAdd.size} a la cola"
+                        toAdd.isEmpty() -> stringResource(R.string.already_in_queue)
+                        toAdd.size == 1 -> stringResource(R.string.add_to_queue)
+                        else -> stringResource(R.string.add_n_to_queue, toAdd.size)
                     },
                 )
             }
@@ -251,7 +263,7 @@ private fun RelatedRow(label: String, entry: Title?, checked: Boolean, onChange:
         Column(modifier = Modifier.padding(start = 8.dp)) {
             Text(label, style = MaterialTheme.typography.bodyLarge)
             Text(
-                text = entry?.let { "${it.name} · ${it.tid}" } ?: "No hay $label en la base de datos",
+                text = entry?.let { "${it.name} · ${it.tid}" } ?: stringResource(R.string.related_none, label),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

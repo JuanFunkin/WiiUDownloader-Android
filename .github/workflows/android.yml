@@ -3,11 +3,11 @@ name: Android
 # Builds the Android app:
 #   1. downloads the title database (db.go), same source the desktop builds use
 #   2. compiles the Go core into an AAR with gomobile
-#   3. builds the APKs with Gradle
+#   3. builds one APK that holds both 64-bit (arm64-v8a) and 32-bit (armeabi-v7a)
 #
-# - Every push to main that touches the app or the Go core uploads the APKs as a
+# - Every push to main that touches the app or the Go core uploads the APK as a
 #   workflow artifact.
-# - Pushing a tag such as v1.0.0 also publishes them as a GitHub release.
+# - Pushing a tag such as v1.0.0 also publishes it as a GitHub release.
 # - "Run workflow" in the Actions tab builds on demand.
 on:
   push:
@@ -44,7 +44,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           cache: true
@@ -92,7 +92,7 @@ jobs:
         run: |
           mkdir -p android/app/libs
           gomobile bind -v \
-            -target=android/arm64,android/arm,android/amd64 \
+            -target=android/arm64,android/arm \
             -androidapi "$ANDROID_API" \
             -javapkg io.github.juanfunkin \
             -trimpath -ldflags="-s -w" \
@@ -136,13 +136,14 @@ jobs:
             -PversionName="${{ steps.version.outputs.name }}" \
             -PversionCode="${{ steps.version.outputs.code }}"
 
-      - name: Collect APKs
+      - name: Collect APK
         run: |
           mkdir -p dist
-          for apk in android/app/build/outputs/apk/release/*.apk; do
-            abi=$(basename "$apk" .apk | sed -E 's/^app-//; s/-release.*$//')
-            cp "$apk" "dist/WiiUDownloader-${{ steps.version.outputs.name }}-${abi}.apk"
-          done
+          apk=android/app/build/outputs/apk/release/app-release.apk
+          test -f "$apk" || { echo "::error::$apk not found"; ls -R android/app/build/outputs || true; exit 1; }
+          cp "$apk" "dist/WiiUDownloader-${{ steps.version.outputs.name }}.apk"
+          echo "ABIs inside the APK:"
+          unzip -l "$apk" | grep -o 'lib/[^/]*/' | sort -u
           ls -la dist
 
       - name: Upload APKs

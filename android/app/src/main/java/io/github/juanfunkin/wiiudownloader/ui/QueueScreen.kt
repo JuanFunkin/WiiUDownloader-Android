@@ -32,12 +32,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.juanfunkin.wiiudownloader.DownloadService
 import io.github.juanfunkin.wiiudownloader.Phase
 import io.github.juanfunkin.wiiudownloader.QueueItem
+import io.github.juanfunkin.wiiudownloader.R
 import io.github.juanfunkin.wiiudownloader.Repo
 import io.github.juanfunkin.wiiudownloader.RunState
 import io.github.juanfunkin.wiiudownloader.formatBytes
@@ -78,11 +80,12 @@ fun QueueScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Text(
-                        text = "Cola (${queue.size}) · ${formatBytes(knownSize)}" + if (sizePending) "…" else "",
+                        text = stringResource(R.string.queue_header, queue.size, formatBytes(knownSize)) +
+                            if (sizePending) "…" else "",
                         style = MaterialTheme.typography.titleMedium,
                     )
                     if (queue.isNotEmpty() && !run.active) {
-                        TextButton(onClick = { Repo.clearQueue() }) { Text("Vaciar") }
+                        TextButton(onClick = { Repo.clearQueue() }) { Text(stringResource(R.string.clear_queue)) }
                     }
                 }
             }
@@ -90,8 +93,7 @@ fun QueueScreen(
             if (queue.isEmpty()) {
                 item {
                     Text(
-                        "La cola está vacía. Toca un juego en la biblioteca para añadirlo, " +
-                            "con su update y DLC si quieres.",
+                        stringResource(R.string.queue_empty),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -110,7 +112,7 @@ fun QueueScreen(
                     .align(Alignment.BottomEnd)
                     .padding(16.dp),
             ) {
-                Text("Descargar")
+                Text(stringResource(R.string.download))
             }
         }
     }
@@ -122,8 +124,8 @@ private fun QueueRow(item: QueueItem, canRemove: Boolean) {
         headlineContent = { Text(item.title.name, maxLines = 2, overflow = TextOverflow.Ellipsis) },
         supportingContent = {
             val size = when {
-                item.sizeBytes == null -> "calculando…"
-                item.sizeBytes < 0 -> "tamaño desconocido"
+                item.sizeBytes == null -> stringResource(R.string.size_calculating)
+                item.sizeBytes < 0 -> stringResource(R.string.size_unknown)
                 else -> formatBytes(item.sizeBytes)
             }
             Text("${item.title.kind} · ${item.title.region} · $size")
@@ -131,7 +133,7 @@ private fun QueueRow(item: QueueItem, canRemove: Boolean) {
         trailingContent = {
             if (canRemove) {
                 IconButton(onClick = { Repo.removeFromQueue(item.title.tid) }) {
-                    Icon(Icons.Default.Close, contentDescription = "Quitar de la cola")
+                    Icon(Icons.Default.Close, contentDescription = stringResource(R.string.remove_from_queue))
                 }
             }
         },
@@ -147,13 +149,13 @@ private fun FolderWarning(onOpenSettings: () -> Unit) {
         ) {
             Icon(Icons.Default.Warning, contentDescription = null)
             Text(
-                "Elige una carpeta de destino antes de descargar.",
+                stringResource(R.string.folder_warning),
                 modifier = Modifier
                     .weight(1f)
                     .padding(horizontal = 12.dp),
                 style = MaterialTheme.typography.bodyMedium,
             )
-            TextButton(onClick = onOpenSettings) { Text("Ajustes") }
+            TextButton(onClick = onOpenSettings) { Text(stringResource(R.string.tab_settings)) }
         }
     }
 }
@@ -163,24 +165,26 @@ private fun sendToService(context: Context, action: String) = DownloadService.se
 @Composable
 private fun RunCard(run: RunState) {
     val context = LocalContext.current
-    val phaseLabel = when (run.phase) {
-        Phase.Downloading -> "Descargando"
-        Phase.Decrypting -> "Descifrando"
-        Phase.Copying -> "Copiando a tu carpeta"
-        Phase.Idle -> "Preparando"
-    }
+    val phaseLabel = stringResource(
+        when (run.phase) {
+            Phase.Downloading -> R.string.phase_downloading
+            Phase.Decrypting -> R.string.phase_decrypting
+            Phase.Copying -> R.string.phase_copying
+            Phase.Idle -> R.string.phase_preparing
+        },
+    )
     val position = if (run.total > 0) "  (${run.index + 1}/${run.total})" else ""
 
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
-                run.title.ifEmpty { "Preparando…" },
+                run.title.ifEmpty { stringResource(R.string.preparing_ellipsis) },
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                (if (run.paused) "En pausa" else phaseLabel) + position,
+                (if (run.paused) stringResource(R.string.state_paused) else phaseLabel) + position,
                 style = MaterialTheme.typography.labelLarge,
             )
 
@@ -217,10 +221,10 @@ private fun RunCard(run: RunState) {
                         )
                     },
                 ) {
-                    Text(if (run.paused) "Reanudar" else "Pausar")
+                    Text(stringResource(if (run.paused) R.string.resume else R.string.pause))
                 }
                 Button(onClick = { sendToService(context, DownloadService.ACTION_CANCEL) }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         }
@@ -233,11 +237,13 @@ private fun ResultCard(run: RunState) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             val failed = run.results.count { !it.ok }
             Text(
-                when {
-                    run.cancelled -> "Descarga cancelada"
-                    failed == 0 -> "Descarga completa"
-                    else -> "Terminó con errores"
-                },
+                stringResource(
+                    when {
+                        run.cancelled -> R.string.result_cancelled
+                        failed == 0 -> R.string.result_complete
+                        else -> R.string.result_errors
+                    },
+                ),
                 style = MaterialTheme.typography.titleMedium,
             )
             run.results.forEach { line ->
@@ -259,7 +265,7 @@ private fun ResultCard(run: RunState) {
                     }
                 }
             }
-            TextButton(onClick = { Repo.clearRun() }) { Text("Cerrar") }
+            TextButton(onClick = { Repo.clearRun() }) { Text(stringResource(R.string.close)) }
         }
     }
 }

@@ -17,7 +17,8 @@ import java.io.IOException
 object Delivery {
     private const val BUFFER_SIZE = 1024 * 1024
 
-    class CancelledException : IOException("copia cancelada")
+    // Never shown to the user: the service catches it and treats it as a cancelled run.
+    class CancelledException : IOException("copy cancelled")
 
     fun deliver(
         context: Context,
@@ -27,8 +28,8 @@ object Delivery {
         onProgress: (Float) -> Unit,
     ) {
         val root = DocumentFile.fromTreeUri(context, treeUri)
-            ?: throw IOException("La carpeta de destino ya no está disponible")
-        if (!root.canWrite()) throw IOException("Sin permiso de escritura en la carpeta de destino")
+            ?: throw IOException(context.getString(R.string.err_folder_gone))
+        if (!root.canWrite()) throw IOException(context.getString(R.string.err_no_write))
 
         val total = sourceDirs.sumOf { sizeOf(it) }.coerceAtLeast(1L)
         var copied = 0L
@@ -38,7 +39,7 @@ object Delivery {
         }
 
         for (dir in sourceDirs) {
-            val target = childDir(root, directoryChildren(root), dir.name)
+            val target = childDir(context, root, directoryChildren(root), dir.name)
             copyDirectory(context, dir, target, isCancelled, progress)
         }
         sourceDirs.forEach { it.deleteRecursively() }
@@ -62,6 +63,7 @@ object Delivery {
     }
 
     private fun childDir(
+        context: Context,
         parent: DocumentFile,
         siblings: MutableMap<String, DocumentFile>,
         name: String,
@@ -69,7 +71,7 @@ object Delivery {
         val existing = siblings[name]
         if (existing != null && existing.isDirectory) return existing
         val created = parent.createDirectory(name)
-            ?: throw IOException("No se pudo crear la carpeta \"$name\"")
+            ?: throw IOException(context.getString(R.string.err_create_dir, name))
         siblings[name] = created
         return created
     }
@@ -82,13 +84,14 @@ object Delivery {
         progress: Progress,
     ) {
         val siblings = directoryChildren(target)
-        val entries = source.listFiles() ?: throw IOException("No se pudo leer ${source.name}")
+        val entries = source.listFiles()
+            ?: throw IOException(context.getString(R.string.err_read_dir, source.name))
 
         for (entry in entries.sortedBy { it.name }) {
             if (isCancelled()) throw CancelledException()
 
             if (entry.isDirectory) {
-                val sub = childDir(target, siblings, entry.name)
+                val sub = childDir(context, target, siblings, entry.name)
                 copyDirectory(context, entry, sub, isCancelled, progress)
                 continue
             }
@@ -101,11 +104,11 @@ object Delivery {
             existing?.delete()
 
             val dest = target.createFile("application/octet-stream", entry.name)
-                ?: throw IOException("No se pudo crear \"${entry.name}\"")
+                ?: throw IOException(context.getString(R.string.err_create_file, entry.name))
             siblings[entry.name] = dest
 
             val out = context.contentResolver.openOutputStream(dest.uri, "w")
-                ?: throw IOException("No se pudo escribir \"${entry.name}\"")
+                ?: throw IOException(context.getString(R.string.err_write_file, entry.name))
             out.use { stream ->
                 entry.inputStream().use { input ->
                     val buffer = ByteArray(BUFFER_SIZE)

@@ -25,8 +25,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.juanfunkin.wiiudownloader.R
 import io.github.juanfunkin.wiiudownloader.Repo
 import io.github.juanfunkin.wiiudownloader.formatBytes
 import kotlinx.coroutines.Dispatchers
@@ -50,41 +52,40 @@ fun SettingsScreen(onPickFolder: () -> Unit, modifier: Modifier = Modifier) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        SectionTitle("Destino")
+        SectionTitle(stringResource(R.string.section_destination))
         Card {
             ListItem(
                 colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                headlineContent = { Text("Carpeta de descarga") },
-                supportingContent = { Text(settings.folderName ?: "Sin elegir") },
+                headlineContent = { Text(stringResource(R.string.download_folder)) },
+                supportingContent = { Text(settings.folderName ?: stringResource(R.string.folder_none)) },
                 trailingContent = {
                     Button(onClick = onPickFolder) {
-                        Text(if (settings.treeUri == null) "Elegir" else "Cambiar")
+                        Text(stringResource(if (settings.treeUri == null) R.string.choose else R.string.change))
                     }
                 },
             )
         }
 
-        SectionTitle("Descarga")
+        SectionTitle(stringResource(R.string.section_download))
         Card {
             Column {
                 SwitchRow(
-                    title = "Descifrar contenido",
-                    subtitle = "Deja el juego listo para Cemu o la consola (code, content, meta). " +
-                        "Si lo desactivas se guardan los archivos cifrados (.app).",
+                    title = stringResource(R.string.decrypt_title),
+                    subtitle = stringResource(R.string.decrypt_sub),
                     checked = settings.decrypt,
                     enabled = !run.active,
                     onChange = Repo::setDecrypt,
                 )
                 SwitchRow(
-                    title = "Borrar archivos cifrados",
-                    subtitle = "Tras descifrar no conserva la copia cifrada y ahorra espacio.",
+                    title = stringResource(R.string.delete_enc_title),
+                    subtitle = stringResource(R.string.delete_enc_sub),
                     checked = settings.deleteEncrypted,
                     enabled = settings.decrypt && !run.active,
                     onChange = Repo::setDeleteEncrypted,
                 )
                 SwitchRow(
-                    title = "Continuar si un título falla",
-                    subtitle = "Sigue con el resto de la cola en vez de detenerse.",
+                    title = stringResource(R.string.continue_title),
+                    subtitle = stringResource(R.string.continue_sub),
                     checked = settings.continueOnError,
                     enabled = !run.active,
                     onChange = Repo::setContinueOnError,
@@ -92,20 +93,18 @@ fun SettingsScreen(onPickFolder: () -> Unit, modifier: Modifier = Modifier) {
             }
         }
 
-        SectionTitle("Almacenamiento temporal")
+        SectionTitle(stringResource(R.string.section_staging))
         Card {
             Column(
                 modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text(
-                    "Cada título se descarga primero en el almacenamiento de la app y, al terminar, " +
-                        "se copia a tu carpeta. Necesitas espacio libre para un título completo " +
-                        "(más si descifras y conservas los archivos cifrados).",
+                    stringResource(R.string.staging_desc),
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Text(
-                    "Ahora ocupa: ${formatBytes(stagingBytes)}",
+                    stringResource(R.string.staging_now, formatBytes(stagingBytes)),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -113,16 +112,14 @@ fun SettingsScreen(onPickFolder: () -> Unit, modifier: Modifier = Modifier) {
                     onClick = { confirmClear = true },
                     enabled = !run.active && stagingBytes > 0,
                 ) {
-                    Text("Borrar archivos temporales")
+                    Text(stringResource(R.string.clear_staging))
                 }
             }
         }
 
-        SectionTitle("Acerca de")
+        SectionTitle(stringResource(R.string.section_about))
         Text(
-            "Base de datos: ${Repo.databaseSize} títulos.\n" +
-                "Portado desde WiiUDownloader de Xpl0itU (GPLv3). Las descargas vienen " +
-                "directamente de los servidores de Nintendo.",
+            stringResource(R.string.about_text, Repo.databaseSize),
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.fillMaxWidth(),
         )
@@ -131,19 +128,19 @@ fun SettingsScreen(onPickFolder: () -> Unit, modifier: Modifier = Modifier) {
     if (confirmClear) {
         AlertDialog(
             onDismissRequest = { confirmClear = false },
-            title = { Text("Borrar archivos temporales") },
+            title = { Text(stringResource(R.string.clear_dialog_title)) },
             text = {
-                Text("Se perderán las descargas a medias y no se podrán reanudar.")
+                Text(stringResource(R.string.clear_dialog_text))
             },
             confirmButton = {
                 TextButton(onClick = {
                     Repo.clearStaging()
                     stagingBytes = Repo.stagingBytes()
                     confirmClear = false
-                }) { Text("Borrar") }
+                }) { Text(stringResource(R.string.delete)) }
             },
             dismissButton = {
-                TextButton(onClick = { confirmClear = false }) { Text("Cancelar") }
+                TextButton(onClick = { confirmClear = false }) { Text(stringResource(R.string.cancel)) }
             },
         )
     }

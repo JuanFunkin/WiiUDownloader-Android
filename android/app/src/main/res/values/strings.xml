@@ -1,4 +1,102 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">WiiUDownloader</string>
+
+    <!-- Tabs -->
+    <string name="tab_library">Library</string>
+    <string name="tab_queue">Queue</string>
+    <string name="tab_settings">Settings</string>
+
+    <!-- Library -->
+    <string name="search_hint">Search by name or Title ID</string>
+    <string name="clear_search">Clear search</string>
+    <string name="cat_game">Games</string>
+    <string name="cat_update">Updates</string>
+    <string name="cat_dlc">DLC</string>
+    <string name="cat_demo">Demos</string>
+    <string name="cat_all">All</string>
+    <string name="region_usa">USA</string>
+    <string name="region_europe">Europe</string>
+    <string name="region_japan">Japan</string>
+    <string name="searching">Searching…</string>
+    <plurals name="results_count">
+        <item quantity="one">%d result</item>
+        <item quantity="other">%d results</item>
+    </plurals>
+    <string name="in_queue">In queue</string>
+    <string name="finding_related">Looking for update and DLC…</string>
+    <string name="related_update">Update</string>
+    <string name="related_dlc">DLC</string>
+    <string name="related_none">No %1$s in the database</string>
+    <string name="add_to_queue">Add to queue</string>
+    <string name="add_n_to_queue">Add %1$d to queue</string>
+    <string name="already_in_queue">Already in queue</string>
+
+    <!-- Queue -->
+    <string name="queue_header">Queue (%1$d) · %2$s</string>
+    <string name="queue_empty">The queue is empty. Tap a game in the library to add it, along with its update and DLC if you want them.</string>
+    <string name="folder_warning">Choose a destination folder before downloading.</string>
+    <string name="clear_queue">Clear</string>
+    <string name="download">Download</string>
+    <string name="remove_from_queue">Remove from queue</string>
+    <string name="size_calculating">calculating…</string>
+    <string name="size_unknown">unknown size</string>
+    <string name="phase_downloading">Downloading</string>
+    <string name="phase_decrypting">Decrypting</string>
+    <string name="phase_copying">Copying to your folder</string>
+    <string name="phase_preparing">Preparing</string>
+    <string name="preparing_ellipsis">Preparing…</string>
+    <string name="state_paused">Paused</string>
+    <string name="pause">Pause</string>
+    <string name="resume">Resume</string>
+    <string name="cancel">Cancel</string>
+    <string name="close">Close</string>
+    <string name="result_cancelled">Download cancelled</string>
+    <string name="result_complete">Download complete</string>
+    <string name="result_errors">Finished with errors</string>
+
+    <!-- Settings -->
+    <string name="section_destination">Destination</string>
+    <string name="download_folder">Download folder</string>
+    <string name="folder_none">Not selected</string>
+    <string name="choose">Choose</string>
+    <string name="change">Change</string>
+    <string name="section_download">Download</string>
+    <string name="decrypt_title">Decrypt content</string>
+    <string name="decrypt_sub">Leaves the game ready for Cemu or the console (code, content, meta). If turned off, the encrypted files (.app) are saved instead.</string>
+    <string name="delete_enc_title">Delete encrypted files</string>
+    <string name="delete_enc_sub">After decrypting, the encrypted copy is not kept, which saves space.</string>
+    <string name="continue_title">Keep going if a title fails</string>
+    <string name="continue_sub">Continues with the rest of the queue instead of stopping.</string>
+    <string name="section_staging">Temporary storage</string>
+    <string name="staging_desc">Each title is downloaded into the app\'s storage first and copied to your folder when it finishes. You need free space for one whole title (more if you decrypt and keep the encrypted files too).</string>
+    <string name="staging_now">Currently using: %1$s</string>
+    <string name="clear_staging">Delete temporary files</string>
+    <string name="clear_dialog_title">Delete temporary files</string>
+    <string name="clear_dialog_text">Partial downloads will be lost and cannot be resumed.</string>
+    <string name="delete">Delete</string>
+    <string name="section_about">About</string>
+    <string name="about_text">Database: %1$d titles.\nPorted from WiiUDownloader by Xpl0itU (GPLv3). Downloads come directly from Nintendo\'s servers.</string>
+
+    <!-- Notifications and run results -->
+    <string name="notif_channel">Downloads</string>
+    <string name="notif_paused">Paused%1$s</string>
+    <string name="notif_decrypting">Decrypting%1$s</string>
+    <string name="notif_copying">Copying to your folder%1$s</string>
+    <string name="notif_downloading">Downloading%1$s</string>
+    <string name="notif_progress">%1$s / %2$s · %3$s%4$s</string>
+    <string name="notif_done">Download complete (%1$d)</string>
+    <string name="notif_cancelled">Download cancelled</string>
+    <string name="notif_errors">Finished with errors: %1$d succeeded, %2$d failed</string>
+    <string name="result_label_download">Download</string>
+    <string name="start_error_default">Could not start the download</string>
+    <string name="copy_failed">Could not copy to the chosen folder: %1$s. The files are still in temporary storage.</string>
+
+    <!-- Copy to the chosen folder -->
+    <string name="err_folder_gone">The destination folder is no longer available</string>
+    <string name="err_no_write">No write permission on the destination folder</string>
+    <string name="err_create_dir">Could not create the folder \"%1$s\"</string>
+    <string name="err_read_dir">Could not read %1$s</string>
+    <string name="err_create_file">Could not create \"%1$s\"</string>
+    <string name="err_write_file">Could not write \"%1$s\"</string>
 </resources>

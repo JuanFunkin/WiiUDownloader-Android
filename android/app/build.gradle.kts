@@ -23,14 +23,16 @@ android {
         targetSdk = 35
         versionCode = appVersionCode
         versionName = appVersionName
-    }
 
-    splits {
-        abi {
-            isEnable = true
-            reset()
-            include("arm64-v8a", "armeabi-v7a", "x86_64")
-            isUniversalApk = true
+        // One APK for every ARM phone: 64-bit (arm64-v8a) and 32-bit (armeabi-v7a).
+        // The matching libraries come from the gomobile AAR.
+        ndk {
+            abiFilters += listOf("arm64-v8a", "armeabi-v7a")
+        }
+
+        // Spanish and English only, so the APK does not carry every library's translations.
+        androidResources {
+            localeFilters += listOf("en", "es")
         }
     }
 

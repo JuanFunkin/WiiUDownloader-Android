@@ -1,14 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Down arrow into a tray, kept inside the 66dp adaptive icon safe zone. -->
+    <!-- Soft shadow under the tablet, so it lifts off the background. -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M49,30h10v20h9l-14,15l-14,-15h9z" />
+        android:fillColor="#33000000"
+        android:pathData="M43,34h22a7,7 0 0 1 7,7v34a7,7 0 0 1 -7,7h-22a7,7 0 0 1 -7,-7v-34a7,7 0 0 1 7,-7z" />
+    <!-- Tablet body. The download arrow and the home bar are cut out (even-odd),
+         so the gradient shows through them. Everything stays inside the 66dp safe zone. -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M36,72h36v6h-36z" />
+        android:fillType="evenOdd"
+        android:pathData="M43,30h22a7,7 0 0 1 7,7v34a7,7 0 0 1 -7,7h-22a7,7 0 0 1 -7,-7v-34a7,7 0 0 1 7,-7z
+                          M50,40h8v14h7l-11,12l-11,-12h7z
+                          M49,71h10v2h-10z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="54"
+                android:startY="30"
+                android:endX="54"
+                android:endY="78"
+                android:type="linear">
+                <item
+                    android:color="#FFFFFFFF"
+                    android:offset="0" />
+                <item
+                    android:color="#FFE3F4FF"
+                    android:offset="1" />
+            </gradient>
+        </aapt:attr>
+    </path>
 </vector>

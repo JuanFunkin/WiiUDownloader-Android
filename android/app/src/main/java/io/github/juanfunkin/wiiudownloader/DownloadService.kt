@@ -128,7 +128,13 @@ class DownloadService : Service() {
             d.start(queueJson)
         } catch (e: Exception) {
             Repo.updateRun {
-                it.copy(results = it.results + ResultLine("Descarga", false, e.message ?: "Error al iniciar"))
+                it.copy(
+                    results = it.results + ResultLine(
+                        getString(R.string.result_label_download),
+                        false,
+                        e.message ?: getString(R.string.start_error_default),
+                    ),
+                )
             }
             finish(cancelled = false)
         }
@@ -163,9 +169,9 @@ class DownloadService : Service() {
         val ok = state.results.count { it.ok }
         val failed = state.results.count { !it.ok }
         val text = when {
-            cancelled -> "Descarga cancelada"
-            failed == 0 -> "Descarga completa ($ok)"
-            else -> "Terminó con errores: $ok correctos, $failed con error"
+            cancelled -> getString(R.string.notif_cancelled)
+            failed == 0 -> getString(R.string.notif_done, ok)
+            else -> getString(R.string.notif_errors, ok, failed)
         }
 
         stopForeground(STOP_FOREGROUND_REMOVE)
@@ -262,8 +268,7 @@ class DownloadService : Service() {
                         results = it.results + ResultLine(
                             name,
                             false,
-                            "No se pudo copiar a la carpeta elegida: $reason. " +
-                                "Los archivos siguen en el almacenamiento temporal.",
+                            getString(R.string.copy_failed, reason),
                         ),
                     )
                 }
@@ -280,7 +285,11 @@ class DownloadService : Service() {
     // ---- Notifications --------------------------------------------------
 
     private fun createChannel() {
-        val channel = NotificationChannel(CHANNEL_ID, "Descargas", NotificationManager.IMPORTANCE_LOW)
+        val channel = NotificationChannel(
+            CHANNEL_ID,
+            getString(R.string.notif_channel),
+            NotificationManager.IMPORTANCE_LOW,
+        )
         getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
     }
 
@@ -309,32 +318,40 @@ class DownloadService : Service() {
         val position = if (s.total > 0) " (${s.index + 1}/${s.total})" else ""
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_download)
-            .setContentTitle(if (s.title.isEmpty()) "Preparando…" else s.title)
+            .setContentTitle(if (s.title.isEmpty()) getString(R.string.preparing_ellipsis) else s.title)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setContentIntent(openAppIntent())
 
         when {
-            s.paused -> builder.setContentText("En pausa$position").setProgress(0, 0, false)
+            s.paused -> builder.setContentText(getString(R.string.notif_paused, position))
+                .setProgress(0, 0, false)
             s.phase == Phase.Decrypting ->
-                builder.setContentText("Descifrando$position")
+                builder.setContentText(getString(R.string.notif_decrypting, position))
                     .setProgress(100, (s.fraction * 100).toInt(), false)
             s.phase == Phase.Copying ->
-                builder.setContentText("Copiando a la carpeta elegida$position")
+                builder.setContentText(getString(R.string.notif_copying, position))
                     .setProgress(100, (s.fraction * 100).toInt(), false)
             s.size > 0 ->
                 builder.setContentText(
-                    "${formatBytes(s.downloaded)} / ${formatBytes(s.size)} · ${formatSpeed(s.speed)}$position",
+                    getString(
+                        R.string.notif_progress,
+                        formatBytes(s.downloaded),
+                        formatBytes(s.size),
+                        formatSpeed(s.speed),
+                        position,
+                    ),
                 ).setProgress(1000, ((s.downloaded.toDouble() / s.size) * 1000).toInt().coerceIn(0, 1000), false)
-            else -> builder.setContentText("Descargando$position").setProgress(0, 0, true)
+            else -> builder.setContentText(getString(R.string.notif_downloading, position))
+                .setProgress(0, 0, true)
         }
 
         if (s.paused) {
-            builder.addAction(0, "Reanudar", actionIntent(ACTION_RESUME, 1))
+            builder.addAction(0, getString(R.string.resume), actionIntent(ACTION_RESUME, 1))
         } else {
-            builder.addAction(0, "Pausar", actionIntent(ACTION_PAUSE, 2))
+            builder.addAction(0, getString(R.string.pause), actionIntent(ACTION_PAUSE, 2))
         }
-        builder.addAction(0, "Cancelar", actionIntent(ACTION_CANCEL, 3))
+        builder.addAction(0, getString(R.string.cancel), actionIntent(ACTION_CANCEL, 3))
         builder.build()
     }
 }

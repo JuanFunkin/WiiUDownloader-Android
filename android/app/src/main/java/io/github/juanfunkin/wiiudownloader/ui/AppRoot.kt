@@ -18,7 +18,9 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.juanfunkin.wiiudownloader.R
 import io.github.juanfunkin.wiiudownloader.Repo
 
 private const val TAB_LIBRARY = 0
@@ -37,7 +39,7 @@ fun AppRoot(onPickFolder: () -> Unit, onStart: () -> Unit) {
                     selected = tab == TAB_LIBRARY,
                     onClick = { tab = TAB_LIBRARY },
                     icon = { Icon(Icons.Default.Home, contentDescription = null) },
-                    label = { Text("Biblioteca") },
+                    label = { Text(stringResource(R.string.tab_library)) },
                 )
                 NavigationBarItem(
                     selected = tab == TAB_QUEUE,
@@ -47,13 +49,13 @@ fun AppRoot(onPickFolder: () -> Unit, onStart: () -> Unit) {
                             Icon(Icons.AutoMirrored.Filled.List, contentDescription = null)
                         }
                     },
-                    label = { Text("Cola") },
+                    label = { Text(stringResource(R.string.tab_queue)) },
                 )
                 NavigationBarItem(
                     selected = tab == TAB_SETTINGS,
                     onClick = { tab = TAB_SETTINGS },
                     icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                    label = { Text("Ajustes") },
+                    label = { Text(stringResource(R.string.tab_settings)) },
                 )
             }
         },

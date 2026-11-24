@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WiiUDownloader</string>
+
+    <!-- Tabs -->
+    <string name="tab_library">Biblioteca</string>
+    <string name="tab_queue">Cola</string>
+    <string name="tab_settings">Ajustes</string>
+
+    <!-- Library -->
+    <string name="search_hint">Buscar por nombre o Title ID</string>
+    <string name="clear_search">Borrar búsqueda</string>
+    <string name="cat_game">Juegos</string>
+    <string name="cat_update">Updates</string>
+    <string name="cat_dlc">DLC</string>
+    <string name="cat_demo">Demos</string>
+    <string name="cat_all">Todo</string>
+    <string name="region_usa">USA</string>
+    <string name="region_europe">Europa</string>
+    <string name="region_japan">Japón</string>
+    <string name="searching">Buscando…</string>
+    <plurals name="results_count">
+        <item quantity="one">%d resultado</item>
+        <item quantity="other">%d resultados</item>
+    </plurals>
+    <string name="in_queue">En la cola</string>
+    <string name="finding_related">Buscando update y DLC…</string>
+    <string name="related_update">Update</string>
+    <string name="related_dlc">DLC</string>
+    <string name="related_none">No hay %1$s en la base de datos</string>
+    <string name="add_to_queue">Añadir a la cola</string>
+    <string name="add_n_to_queue">Añadir %1$d a la cola</string>
+    <string name="already_in_queue">Ya está en la cola</string>
+
+    <!-- Queue -->
+    <string name="queue_header">Cola (%1$d) · %2$s</string>
+    <string name="queue_empty">La cola está vacía. Toca un juego en la biblioteca para añadirlo, con su update y DLC si quieres.</string>
+    <string name="folder_warning">Elige una carpeta de destino antes de descargar.</string>
+    <string name="clear_queue">Vaciar</string>
+    <string name="download">Descargar</string>
+    <string name="remove_from_queue">Quitar de la cola</string>
+    <string name="size_calculating">calculando…</string>
+    <string name="size_unknown">tamaño desconocido</string>
+    <string name="phase_downloading">Descargando</string>
+    <string name="phase_decrypting">Descifrando</string>
+    <string name="phase_copying">Copiando a tu carpeta</string>
+    <string name="phase_preparing">Preparando</string>
+    <string name="preparing_ellipsis">Preparando…</string>
+    <string name="state_paused">En pausa</string>
+    <string name="pause">Pausar</string>
+    <string name="resume">Reanudar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="close">Cerrar</string>
+    <string name="result_cancelled">Descarga cancelada</string>
+    <string name="result_complete">Descarga completa</string>
+    <string name="result_errors">Terminó con errores</string>
+
+    <!-- Settings -->
+    <string name="section_destination">Destino</string>
+    <string name="download_folder">Carpeta de descarga</string>
+    <string name="folder_none">Sin elegir</string>
+    <string name="choose">Elegir</string>
+    <string name="change">Cambiar</string>
+    <string name="section_download">Descarga</string>
+    <string name="decrypt_title">Descifrar contenido</string>
+    <string name="decrypt_sub">Deja el juego listo para Cemu o la consola (code, content, meta). Si lo desactivas se guardan los archivos cifrados (.app).</string>
+    <string name="delete_enc_title">Borrar archivos cifrados</string>
+    <string name="delete_enc_sub">Tras descifrar no se conserva la copia cifrada, así ahorras espacio.</string>
+    <string name="continue_title">Continuar si un título falla</string>
+    <string name="continue_sub">Sigue con el resto de la cola en vez de detenerse.</string>
+    <string name="section_staging">Almacenamiento temporal</string>
+    <string name="staging_desc">Cada título se descarga primero en el almacenamiento de la app y, al terminar, se copia a tu carpeta. Necesitas espacio libre para un título completo (más si descifras y conservas también los archivos cifrados).</string>
+    <string name="staging_now">Ahora ocupa: %1$s</string>
+    <string name="clear_staging">Borrar archivos temporales</string>
+    <string name="clear_dialog_title">Borrar archivos temporales</string>
+    <string name="clear_dialog_text">Se perderán las descargas a medias y no se podrán reanudar.</string>
+    <string name="delete">Borrar</string>
+    <string name="section_about">Acerca de</string>
+    <string name="about_text">Base de datos: %1$d títulos.\nPortado desde WiiUDownloader de Xpl0itU (GPLv3). Las descargas vienen directamente de los servidores de Nintendo.</string>
+
+    <!-- Notifications and run results -->
+    <string name="notif_channel">Descargas</string>
+    <string name="notif_paused">En pausa%1$s</string>
+    <string name="notif_decrypting">Descifrando%1$s</string>
+    <string name="notif_copying">Copiando a tu carpeta%1$s</string>
+    <string name="notif_downloading">Descargando%1$s</string>
+    <string name="notif_progress">%1$s / %2$s · %3$s%4$s</string>
+    <string name="notif_done">Descarga completa (%1$d)</string>
+    <string name="notif_cancelled">Descarga cancelada</string>
+    <string name="notif_errors">Terminó con errores: %1$d correctos, %2$d con error</string>
+    <string name="result_label_download">Descarga</string>
+    <string name="start_error_default">No se pudo iniciar la descarga</string>
+    <string name="copy_failed">No se pudo copiar a la carpeta elegida: %1$s. Los archivos siguen en el almacenamiento temporal.</string>
+
+    <!-- Copy to the chosen folder -->
+    <string name="err_folder_gone">La carpeta de destino ya no está disponible</string>
+    <string name="err_no_write">Sin permiso de escritura en la carpeta de destino</string>
+    <string name="err_create_dir">No se pudo crear la carpeta \"%1$s\"</string>
+    <string name="err_read_dir">No se pudo leer %1$s</string>
+    <string name="err_create_file">No se pudo crear \"%1$s\"</string>
+    <string name="err_write_file">No se pudo escribir \"%1$s\"</string>
+</resources>
