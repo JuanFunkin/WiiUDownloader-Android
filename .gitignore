@@ -45,3 +45,13 @@ app.log
 .bak2
 
 .smoke
+# Android app
+# The root pattern "main" above would otherwise swallow android/app/src/main.
+!android/app/src/main/
+android/.gradle/
+android/local.properties
+android/**/build/
+android/app/libs/*.aar
+android/app/libs/*.jar
+.idea/
+*.iml

@@ -1,0 +1,176 @@
+name: Android
+
+# Builds the Android app:
+#   1. downloads the title database (db.go), same source the desktop builds use
+#   2. compiles the Go core into an AAR with gomobile
+#   3. builds the APKs with Gradle
+#
+# - Every push to main that touches the app or the Go core uploads the APKs as a
+#   workflow artifact.
+# - Pushing a tag such as v1.0.0 also publishes them as a GitHub release.
+# - "Run workflow" in the Actions tab builds on demand.
+on:
+  push:
+    branches: [main, android-port]
+    tags: ["v*"]
+    paths:
+      - "android/**"
+      - "wiiumobile/**"
+      - "*.go"
+      - "internal/**"
+      - "go.mod"
+      - "go.sum"
+      - ".github/workflows/android.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  ANDROID_API: "26" # must match minSdk in android/app/build.gradle.kts
+  NDK_VERSION: "27.2.12479018"
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Set up Android SDK and NDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: "platform-tools platforms;android-35 build-tools;35.0.0 ndk;${{ env.NDK_VERSION }}"
+
+      - name: Download the title database (db.go)
+        run: |
+          curl --fail --location --compressed --retry 5 --retry-delay 5 \
+            -o db.go -H 'User-Agent: NUSspliBuilder/2.2' 'https://napi.v10lator.de/db?t=go'
+          if grep -q 'var titleEntry =' db.go; then
+            if grep -q 'type TitleEntry struct' db.go; then
+              sed -i '/type TitleEntry struct/,/}/d' db.go
+            fi
+            sed -i 's/var titleEntry =/func init() { TitleDatabase =/' db.go
+            echo '}' >> db.go
+          fi
+          grep -q '^package wiiudownloader' db.go || sed -i '1i package wiiudownloader' db.go
+          grep -q 'TitleDatabase' db.go || { echo "::error::db.go does not populate TitleDatabase"; exit 1; }
+          wc -c db.go
+
+      - name: Check that the Go core compiles
+        run: go build ./...
+
+      - name: Install gomobile
+        run: |
+          go install golang.org/x/mobile/cmd/gomobile@latest
+          go install golang.org/x/mobile/cmd/gobind@latest
+          go get golang.org/x/mobile/bind
+          gomobile init
+
+      - name: Build the Go AAR
+        env:
+          ANDROID_NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/${{ env.NDK_VERSION }}
+        run: |
+          mkdir -p android/app/libs
+          gomobile bind -v \
+            -target=android/arm64,android/arm,android/amd64 \
+            -androidapi "$ANDROID_API" \
+            -javapkg io.github.juanfunkin \
+            -trimpath -ldflags="-s -w" \
+            -o android/app/libs/wiiu.aar \
+            ./wiiumobile
+          ls -la android/app/libs
+
+      - name: Work out the version
+        id: version
+        run: |
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            echo "name=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=0.0.0-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          fi
+          echo "code=${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+
+      # Optional. Without these secrets the APK is signed with a throwaway debug key,
+      # which installs fine but changes on every build, so updates need an uninstall first.
+      - name: Prepare release signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+            echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+            echo "Using the release keystore from secrets."
+          else
+            echo "No ANDROID_KEYSTORE_BASE64 secret; signing with the debug key."
+          fi
+
+      - name: Build APKs
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          chmod +x ./gradlew
+          ./gradlew --no-daemon assembleRelease \
+            -PversionName="${{ steps.version.outputs.name }}" \
+            -PversionCode="${{ steps.version.outputs.code }}"
+
+      - name: Collect APKs
+        run: |
+          mkdir -p dist
+          for apk in android/app/build/outputs/apk/release/*.apk; do
+            abi=$(basename "$apk" .apk | sed -E 's/^app-//; s/-release.*$//')
+            cp "$apk" "dist/WiiUDownloader-${{ steps.version.outputs.name }}-${abi}.apk"
+          done
+          ls -la dist
+
+      - name: Upload APKs
+        uses: actions/upload-artifact@v7
+        with:
+          name: WiiUDownloader-Android
+          path: dist/*.apk
+          if-no-files-found: error
+
+  release:
+    name: Publish release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download APKs
+        uses: actions/download-artifact@v8
+        with:
+          name: WiiUDownloader-Android
+          path: release
+
+      - name: Publish release
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          makeLatest: true
+          generateReleaseNotes: true
+          artifacts: "release/*.apk"
+          token: ${{ secrets.GITHUB_TOKEN }}
